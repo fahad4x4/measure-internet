@@ -6,22 +6,39 @@ green=$(tput setaf 2 2>/dev/null)
 red=$(tput setaf 1 2>/dev/null)
 reset=$(tput sgr0 2>/dev/null)
 
+# Cloudflare's public speed test endpoints
+download_url="https://speed.cloudflare.com/__down?bytes=25000000"   # 25 MB
+upload_url="https://speed.cloudflare.com/__up"
+upload_bytes=10000000                                               # 10 MB
+
 # Check required tools
-for tool in speedtest-cli curl ping; do
+for tool in curl ping awk; do
   if ! command -v "$tool" > /dev/null 2>&1; then
     echo "${red}$tool is not installed${reset}"
     exit 1
   fi
 done
 
-# Measure download and upload speed with one speedtest run
-echo "${green}Measuring download and upload speed...${reset}"
-if ! result=$(speedtest-cli --simple 2>&1); then
-  echo "${red}speedtest-cli failed:${reset} $result"
+# Convert bytes per second (curl's speed unit) to "<n> Mbit/s"
+to_mbits() {
+  awk -v bps="$1" 'BEGIN { printf "%.2f Mbit/s", bps * 8 / 1000000 }'
+}
+
+# Measure download speed
+echo "${green}Measuring download speed...${reset}"
+if ! download_bps=$(curl -sSf -o /dev/null --max-time 60 -w "%{speed_download}" "$download_url" 2>&1); then
+  echo "${red}Download test failed:${reset} $download_bps"
   exit 1
 fi
-download_speed=$(awk '/Download/{print $2 " " $3}' <<< "$result")
-upload_speed=$(awk '/Upload/{print $2 " " $3}' <<< "$result")
+download_speed=$(to_mbits "$download_bps")
+
+# Measure upload speed
+echo "${green}Measuring upload speed...${reset}"
+if ! upload_bps=$(head -c "$upload_bytes" /dev/zero | curl -sSf -o /dev/null --max-time 60 -w "%{speed_upload}" -X POST --data-binary @- "$upload_url" 2>&1); then
+  echo "${red}Upload test failed:${reset} $upload_bps"
+  exit 1
+fi
+upload_speed=$(to_mbits "$upload_bps")
 
 # Measure ping time
 echo "${green}Measuring ping time...${reset}"
