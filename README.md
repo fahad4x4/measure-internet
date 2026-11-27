@@ -17,30 +17,29 @@
 
 `internet_speed_test.sh` checks the quality of your internet connection and prints a short summary:
 
-- **Download and upload speed** — from a single `speedtest-cli --simple` run.
+- **Download speed** — time to download a 25 MB test file from Cloudflare's public speed test endpoint (`https://speed.cloudflare.com/__down`).
+- **Upload speed** — time to upload 10 MB of data to `https://speed.cloudflare.com/__up`.
 - **Ping time** — the average of 10 pings to `google.com`.
 - **Response time** — the total time `curl` takes to fetch `https://www.google.com`.
 
 ### Features
 
-- Checks that `speedtest-cli`, `curl`, and `ping` are installed before starting, and exits with a clear message if one is missing.
-- Measures download and upload in one speed test.
-- Exits with an error message if `speedtest-cli` fails.
+- Checks that `curl`, `ping`, and `awk` are installed before starting, and exits with a clear message if one is missing.
+- Uses only `curl` for the speed tests; no extra speed test tool is needed.
+- Exits with an error message if the download or upload test fails.
 - Colored progress messages and results (via `tput`).
 
 ### Requirements
 
 - Bash
-- [`speedtest-cli`](https://github.com/sivel/speedtest-cli)
 - `curl`
 - `ping`
+- `awk`
 
 For example, on Debian/Ubuntu:
 
 ```bash
-sudo apt install speedtest-cli curl iputils-ping
-# or install speedtest-cli with pip
-pip install speedtest-cli
+sudo apt install curl iputils-ping gawk
 ```
 
 ### Installation
@@ -60,7 +59,8 @@ chmod +x internet_speed_test.sh
 Output format (values depend on your connection):
 
 ```text
-Measuring download and upload speed...
+Measuring download speed...
+Measuring upload speed...
 Measuring ping time...
 Measuring response time...
 Results:
@@ -70,7 +70,7 @@ Ping time to google.com: <value> ms
 Response time for https://www.google.com: <value> s
 ```
 
-A full run takes a little while, since it includes a speed test and 10 pings.
+A full run takes a little while, since it includes a download, an upload, and 10 pings.
 
 ### Project structure
 
@@ -101,30 +101,29 @@ Released under the Apache License 2.0. See [LICENSE](LICENSE).
 
 يقيس السكربت `internet_speed_test.sh` جودة اتصالك بالإنترنت ويعرض ملخصًا مختصرًا يشمل:
 
-- **سرعة التنزيل والرفع** — من تشغيل واحد للأمر `speedtest-cli --simple`.
+- **سرعة التنزيل** — الوقت اللازم لتنزيل ملف اختبار بحجم 25 ميغابايت من خدمة اختبار السرعة العامة لدى Cloudflare (`https://speed.cloudflare.com/__down`).
+- **سرعة الرفع** — الوقت اللازم لرفع 10 ميغابايت من البيانات إلى `https://speed.cloudflare.com/__up`.
 - **زمن الاستجابة (Ping)** — متوسط 10 طلبات ping إلى `google.com`.
 - **زمن استجابة الويب** — الوقت الكلي الذي يستغرقه `curl` لجلب `https://www.google.com`.
 
 ### المزايا
 
-- التحقق من تثبيت `speedtest-cli` و`curl` و`ping` قبل البدء، والخروج برسالة واضحة إذا كانت إحداها غير مثبتة.
-- قياس سرعتي التنزيل والرفع في اختبار سرعة واحد.
-- الخروج برسالة خطأ إذا فشل `speedtest-cli`.
+- التحقق من تثبيت `curl` و`ping` و`awk` قبل البدء، والخروج برسالة واضحة إذا كانت إحداها غير مثبتة.
+- يعتمد على `curl` وحده في اختبار السرعة، دون الحاجة إلى أداة اختبار سرعة إضافية.
+- الخروج برسالة خطأ إذا فشل اختبار التنزيل أو الرفع.
 - رسائل تقدّم ونتائج ملونة (عبر `tput`).
 
 ### المتطلبات
 
 - Bash
-- [`speedtest-cli`](https://github.com/sivel/speedtest-cli)
 - `curl`
 - `ping`
+- `awk`
 
 على سبيل المثال، في Debian أو Ubuntu:
 
 ```bash
-sudo apt install speedtest-cli curl iputils-ping
-# أو تثبيت speedtest-cli عبر pip
-pip install speedtest-cli
+sudo apt install curl iputils-ping gawk
 ```
 
 ### التثبيت
@@ -144,7 +143,8 @@ chmod +x internet_speed_test.sh
 شكل المخرجات (تختلف القيم بحسب اتصالك):
 
 ```text
-Measuring download and upload speed...
+Measuring download speed...
+Measuring upload speed...
 Measuring ping time...
 Measuring response time...
 Results:
@@ -154,7 +154,7 @@ Ping time to google.com: <value> ms
 Response time for https://www.google.com: <value> s
 ```
 
-يستغرق التشغيل الكامل بعض الوقت، لأنه يتضمن اختبار سرعة و10 طلبات ping.
+يستغرق التشغيل الكامل بعض الوقت، لأنه يتضمن تنزيلًا ورفعًا و10 طلبات ping.
 
 ### هيكل المشروع
 
