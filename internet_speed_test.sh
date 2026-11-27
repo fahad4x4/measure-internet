@@ -2,37 +2,34 @@
 # Speedtest script by Fahad ALGhathbar
 
 # Set colors
-green=$(tput setaf 2)
-red=$(tput setaf 1)
-reset=$(tput sgr0)
+green=$(tput setaf 2 2>/dev/null)
+red=$(tput setaf 1 2>/dev/null)
+reset=$(tput sgr0 2>/dev/null)
 
-# Check if wget is installed
-if ! which wget > /dev/null; then
-  echo "${red}wget is not installed${reset}"
+# Check required tools
+for tool in speedtest-cli curl ping; do
+  if ! command -v "$tool" > /dev/null 2>&1; then
+    echo "${red}$tool is not installed${reset}"
+    exit 1
+  fi
+done
+
+# Measure download and upload speed with one speedtest run
+echo "${green}Measuring download and upload speed...${reset}"
+if ! result=$(speedtest-cli --simple 2>&1); then
+  echo "${red}speedtest-cli failed:${reset} $result"
   exit 1
 fi
-
-# Check if speedtest-cli is installed
-if ! which speedtest-cli > /dev/null; then
-  echo "${red}speedtest-cli is not installed${reset}"
-  exit 1
-fi
-
-# Measure download speed
-echo "${green}Measuring download speed...${reset}"
-download_speed=$(wget -O /dev/null http://speedtest.wdc01.softlayer.com/downloads/test10.zip 2>&1 | grep -o '[0-9.]\+ [KM]*B/s' | tail -1)
-
-# Measure upload speed
-echo "${green}Measuring upload speed...${reset}"
-upload_speed=$(speedtest-cli --simple | awk '/Upload/{print $2 " " $3}')
+download_speed=$(awk '/Download/{print $2 " " $3}' <<< "$result")
+upload_speed=$(awk '/Upload/{print $2 " " $3}' <<< "$result")
 
 # Measure ping time
 echo "${green}Measuring ping time...${reset}"
-ping_time=$(ping -c 10 google.com | tail -1| awk '{print $4}' | cut -d '/' -f 2)
+ping_time=$(ping -c 10 google.com | tail -1 | awk '{print $4}' | cut -d '/' -f 2)
 
 # Measure response time
 echo "${green}Measuring response time...${reset}"
-response_time=$(curl -s -o /dev/null -w "%{time_total}\n" https://www.google.com)
+response_time=$(curl -s -o /dev/null -w "%{time_total}" https://www.google.com)
 
 echo "${green}Results:${reset}"
 echo "Download speed: ${green}$download_speed${reset}"
